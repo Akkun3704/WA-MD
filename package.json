@@ -1,0 +1,23 @@
+{
+  "name": "WhatsApp-Bot Multi Device",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akkun3704/WA-MD.git"
+  },
+  "author": "Akkun3704",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Akkun3704/WA-MD/issues"
+  },
+  "homepage": "https://github.com/Akkun3704/WA-MD",
+  "dependencies": {
+    "@adiwajshing/baileys-md": "github:adiwajshing/baileys#multi-device"
+  }
+}
