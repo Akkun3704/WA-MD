@@ -165,7 +165,14 @@ module.exports = {
 				break
 			}
 			case /^gro?up$/i.test(command): {
-				
+				if (!isGroup) return reply(mess.group)
+				if (!isAdmin) return reply(mess.admin)
+				if (!isBotAdmin) return reply(mess.botAdmin)
+				if (/tutup|close|buka|open/i.test(args[0])) await conn.groupSettingUpdate(from, /tutup|close/i.test(args[0]) ? 'announcement' : 'not_announcement').then(() => reply(`Success ${args[0]} group`))
+				else {
+					let buttons = [{ buttonId: `${prefix + command} open` , buttonText: { displayText: 'Open', type: 1 }}, { buttonId: `${prefix + command} close`, buttonText: { displayText: 'Close', type: 1 }}]
+					conn.sendMessage(from, { text: 'Choose type', buttons }, { quoted: m })
+				}
 				break
 			}
 			case /^link(gro?up|gc)?$/i.test(command): {
