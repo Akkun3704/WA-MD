@@ -1,23 +1,28 @@
 {
-  "name": "WhatsApp-Bot Multi Device",
+  "name": "bot-md",
   "version": "1.0.0",
-  "description": "",
+  "description": "Multi Device WhatsApp Bot",
   "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
   "scripts": {
-    "test": "",
     "start": "node index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Akkun3704/WA-MD.git"
   },
-  "author": "Akkun3704",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/Akkun3704/WA-MD/issues"
   },
-  "homepage": "https://github.com/Akkun3704/WA-MD",
+  "license": "ISC",
   "dependencies": {
-    "@adiwajshing/baileys-md": "github:adiwajshing/baileys#multi-device"
-  }
+    "@adiwajshing/baileys-md": "github:adiwajshing/baileys#multi-device",
+    "axios": "^0.24.0",
+    "file-type": "^16.5.2",
+    "form-data": "^4.0.0"
+  },
+  "author": "Ripp",
+  "homepage": "https://github.com/Akkun3704/WA-MD"
 }
