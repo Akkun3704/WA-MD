@@ -214,20 +214,20 @@ module.exports = {
 			case /^s(tic?ker)?(gif)?$/i.test(command): {
 				if (/image|video/.test(type)) {
 					let media = await conn.downloadM(m.message[type], type.replace(/Message/, ''))
-					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: true })
+					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: /-crop/i.test(args[0]) ? false : true, crop: /-crop/i.test(args[0]) })
 				} else if ((isQuotedSticker && /false/.test(quoted[typeQuoted].isAnimated)) || isQuotedImage || isQuotedVideo) {
 					let media = await conn.downloadM(quoted[typeQuoted], typeQuoted.replace(/Message/, ''))
-					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: true })
+					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: /-crop/i.test(args[0]) ? false : true, crop: /-crop/i.test(args[0]) })
 				} else if (/buttons/.test(typeQuoted)) {
 					let tipe = quoted[typeQuoted].imageMessage ? quoted[typeQuoted].imageMessage : quoted[typeQuoted].videoMessage
 					let media = await conn.downloadM(tipe, quoted[typeQuoted].imageMessage ? 'image' : 'video')
-					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: true })
+					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: /-crop/i.test(args[0]) ? false : true, crop: /-crop/i.test(args[0]) })
 				} else if (/viewOnce/.test(typeQuoted)) {
 					let tipe = quoted[typeQuoted].message.imageMessage ? quoted[typeQuoted].message.imageMessage : quoted[typeQuoted].message.videoMessage
 					let media = await conn.downloadM(tipe, quoted[typeQuoted].message.imageMessage ? 'image' : 'video')
-					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: true })
+					await conn.sendSticker(from, media, m, { pack: packName, author: authorName, keepScale: /-crop/i.test(args[0]) ? false : true, crop: /-crop/i.test(args[0]) })
 				} else if (args[0] && isUrl(args[0])) {
-					await conn.sendSticker(from, args[0], m, { pack: packName, author: authorName, keepScale: true })
+					await conn.sendSticker(from, args[0], m, { pack: packName, author: authorName, keepScale: /-crop/i.test(args[1]) ? false : true, crop: /-crop/i.test(args[1]) })
 				} else reply('Conversion failed...')
 				break
 			}
