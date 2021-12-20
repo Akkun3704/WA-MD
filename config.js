@@ -11,6 +11,7 @@ global.thumbnailUrl = ['https://telegra.ph/file/69d52042b39386c222151.jpg', 'htt
 
 global.APIs = {
 	zeks: 'https://api.zeks.me/api',
+	popcat: 'https://api.popcat.xyz',
 	hardianto: 'https://hardianto.xyz/api',
 	zacros: 'https://api.zacros-team.com',
 	nrtm: 'https://nurutomo.herokuapp.com',
