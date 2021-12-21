@@ -64,7 +64,7 @@ module.exports = {
 			tipe.viewOnce = false
 			let mek = m.message.viewOnceMessage.message.imageMessage ? { key: { fromMe: false, participant: sender, id: m.key.id }, message: { viewOnceMessage: { message: { imageMessage: { viewOnce: true }}}}} :  { key: { fromMe: false, participant: sender, id: m.key.id }, message: { viewOnceMessage: { message: { videoMessage: { viewOnce: true }}}}}
 			let once = Baileys.generateWAMessageFromContent(from, m.message.viewOnceMessage.message, { quoted: mek })
-			await reply('viewOnce detected!').then(() => conn.relayMessage(from, once.message, { messageId: pe.key.id }))
+			await reply('viewOnce detected!').then(() => conn.relayMessage(from, once.message, { messageId: once.key.id }))
 		}
 		
 		conn.sendReadReceipt(from, sender, [m.key.id])
@@ -74,16 +74,20 @@ module.exports = {
 			case /^(menu|help)$/i.test(command): {
 				let { data } = await conn.getFile(pickRandom(thumbnailUrl))
 				if (isGroup) {
-					let buttons = [{ buttonId: prefix + 'ping', buttonText: { displayText: 'Ping', type: 1 }}, { buttonId: prefix + 'owner', buttonText: { displayText: 'Owner', type: 1 }}, { buttonId: prefix + 'tos', buttonText: { displayText: 'TOS', type: 1 }}]
+					let buttons = [{ buttonId: prefix + 'tos', buttonText: { displayText: 'TOS', type: 1 }}, { buttonId: prefix + 'owner', buttonText: { displayText: 'Owner', type: 1 }}, { buttonId: prefix + 'sc', buttonText: { displayText: 'Source Code', type: 1 }}]
 					await conn.sendMessage(from, { location: { jpegThumbnail: data }, caption: menu(clockString), footer: `Hai @${sender.split('@')[0]} ${decodeURI('%F0%9F%91%8B')}`, mentions: [sender], buttons })
 				} else {
-					let templateButtons = [{ urlButton: { displayText: 'Source Code', url : pkg.homepage }}, { quickReplyButton: { displayText: 'Ping', id: prefix + 'ping' }}, { quickReplyButton: { displayText: 'Owner', id: prefix + 'owner' }}, { quickReplyButton: { displayText: 'TOS', id: prefix + 'tos' }}]
+					let templateButtons = [{ urlButton: { displayText: 'Source Code', url : pkg.homepage }}, { quickReplyButton: { displayText: 'TOS', id: prefix + 'tos' }}, { quickReplyButton: { displayText: 'Ping', id: prefix + 'ping' }}, { quickReplyButton: { displayText: 'Owner', id: prefix + 'owner' }}]
 					await conn.sendMessage(from, { location: { jpegThumbnail: data }, caption: menu(clockString), footer: `Hai ${pushname} ${decodeURI('%F0%9F%91%8B')}`, templateButtons })
 				}
 				break
 			}
 			case /^(tos|rules|rule)$/i.test(command): {
 				reply(tos(prefix))
+				break
+			}
+			case /^s(c|ourcecode)$/i.test(command): {
+				reply(pkg.homepage)
 				break
 			}
 				
@@ -366,7 +370,7 @@ module.exports = {
 				axios.get(API('zacros', '/downloader/youtube', { link: args[0] })).then(async ({ data }) => {
 					let { url } = data.medias.filter(v => /128/.test(v.quality) && /true/.test(v.audioAvailable) && /false/.test(v.videoAvailable))[0]
 					let buttons = [{ buttonId: `${prefix}ytv ${args[0]}`, buttonText: { displayText: 'Video', type: 1 }}]
-					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: 'YTMP3 DOWNLOADER', ignoreKey: ['medias'] }), buttons }, { quoted: m })
+					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: '*YTMP3 DOWNLOADER*', ignoreKey: ['medias'] }), buttons }, { quoted: m })
 					conn.sendMessage(from, { audio: { url }, mimetype: 'audio/mpeg', contextInfo: { externalAdReply: { title: data.title, body: '', mediaType: 2, thumbnail: (await conn.getFile(data.thumbnail)).data, mediaUrl: data.url }}}, { quoted: m })
 				}).catch(reply)
 				break
@@ -378,7 +382,7 @@ module.exports = {
 				axios.get(API('zacros', '/downloader/youtube', { link: args[0] })).then(async ({ data }) => {
 					let { url } = data.medias.filter(v => /720|480|360/.test(v.quality) && /true/.test(v.audioAvailable) && /true/.test(v.videoAvailable))[0]
 					let buttons = [{ buttonId: `${prefix}yta ${args[0]}`, buttonText: { displayText: 'Audio', type: 1 }}]
-					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: 'YTMP4 DOWNLOADER', ignoreKey: ['medias'] }), buttons }, { quoted: m })
+					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: '*YTMP4 DOWNLOADER*', ignoreKey: ['medias'] }), buttons }, { quoted: m })
 					conn.sendFile(from, url, '', '', m, { jpegThumbnail: (await conn.getFile(data.thumbnail)).data })
 				}).catch(reply)
 				break
@@ -389,7 +393,7 @@ module.exports = {
 				axios.get(API('zacros', '/downloader/play', { query: q })).then(async ({ data }) => {
 					let { url } = data.medias.filter(v => /128/.test(v.quality) && /true/.test(v.audioAvailable) && /false/.test(v.videoAvailable))[0]
 					let buttons = [{ buttonId: `${prefix}ytv ${data.url}`, buttonText: { displayText: 'Video', type: 1 }}]
-					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: 'YT PLAY', ignoreKey: ['medias'] }), buttons }, { quoted: m })
+					await conn.sendMessage(from, { image: { url: data.thumbnail }, caption: parseResult(data, { title: '*YT PLAY*', ignoreKey: ['medias'] }), buttons }, { quoted: m })
 					conn.sendMessage(from, { audio: { url }, mimetype: 'audio/mpeg', contextInfo: { externalAdReply: { title: data.title, body: '', mediaType: 2, thumbnail: (await conn.getFile(data.thumbnail)).data, mediaUrl: data.url }}}, { quoted: m })
 				}).catch(reply)
 				break
@@ -449,20 +453,39 @@ module.exports = {
 				if (q && !isUrl(q)) {
 					axios.get(API('hadi', '/soundcloud/play', { query: q })).then(async ({ data }) => {
 						await reply(mess.wait)
-						await conn.sendFile(from, data.result.thumbnail, '', parseResult(data.result, { title: 'SOUNDCLOUD PLAY', ignoreKey: ['download'] }), m)
+						await conn.sendFile(from, data.result.thumbnail, '', parseResult(data.result, { title: '*SOUNDCLOUD PLAY*', ignoreKey: ['download'] }), m)
 						conn.sendMessage(from, { audio: { url: data.result.download }, mimetype: 'audio/mpeg' }, { quoted: m })
 					}).catch(reply)
 				} else if (args[0] && isUrl(args[0])) {
 					axios.get(API('zacros', '/downloader/scdl', { link: args[0] })).then(async ({ data }) => {
 						await reply(mess.wait)
-						await conn.sendFile(from, data.thumb, '', parseResult(data, { title: 'SOUNDCLOUD DOWNLOADER', ignoreKey: ['link'] }), m)
+						await conn.sendFile(from, data.thumb, '', parseResult(data, { title: '*SOUNDCLOUD DOWNLOADER*', ignoreKey: ['link'] }), m)
 						conn.sendMessage(from, { audio: { url: data.link }, mimetype: 'audio/mpeg' }, { quoted: m })
 					}).catch(reply)
 				} else reply(`Example:\n${prefix + command} https://m.soundcloud.com/fradical/first-date\nOr\n${prefix + command} first date`)
 				break
 			}
-				
+			case /^nh(pdf|entaipdf)$/i.test(command): {
+				if (!args[0]) return reply(`Example:\n${prefix + command} 212121`)
+				if (isNaN(args[0])) return reply('Kode harus berupa angka')
+				await reply(mess.wait)
+				axios.get(API('zacros', '/nsfw/nHentai', { code: args[0] })).then(async ({ data }) => {
+					let { title, details, pages } = data.result
+					let teks = `${parseResult(data.result, { title: '*NHENTAI DOWNLOADER*', ignoreVal: ['details', 'pages', 'thumbnails', 'link'] })}\n${parseResult(details, { title: '' })}`
+					await conn.sendFile(from, pages[0], '', teks, m)
+					conn.sendMessage(from, { document: { url: API('zacros', '/nsfw/nhcode', { query: args[0] }) }, jpegThumbnail: (await conn.getFile(pages[0])).data, mimetype: 'application/pdf', fileName: `${title}.pdf` }, { quoted: m })
+				}).catch(reply)
+				break
+			}
+			
 			/** Ya begitulah **/
+			case /^r(vo|eadviewonce)$/i.test(command): {
+				if (/viewOnce/.test(typeQuoted)) {
+					let tipe = quoted[typeQuoted].message.imageMessage ? quoted[typeQuoted].message.imageMessage : quoted[typeQuoted].message.videoMessage
+					conn.downloadM(tipe, quoted[typeQuoted].message.imageMessage ? 'image' : 'video').then(v => conn.sendFile(from, v, '', quoted[typeQuoted].message.imageMessage ? quoted[typeQuoted].message.imageMessage.caption : quoted[typeQuoted].message.videoMessage.caption, m))
+				} else reply('Reply viewOnceMessage!')
+				break
+			}
 			case /^ss(web)?f?$/i.test(command): {
 				if (!args[0]) return reply('Urlnya?')
 				let url = /https?:\/\//.test(args[0]) ? args[0] : 'https://' + args[0]
