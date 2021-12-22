@@ -22,6 +22,10 @@ const { color, clockString, isUrl, getBuffer, pickRandom, parseResult, uploadFil
 const time = new Date().toLocaleString('es-AR')
 const delay = ms => Baileys.delay(ms)
 
+let tebakgambar = {}
+let susunkata = {}
+let tebakkata = {}
+
 module.exports = {
 	async chatUpdate(msg) {
 		const m = msg.messages[0]
@@ -35,6 +39,7 @@ module.exports = {
 		const typeQuoted = quoted && Object.keys(quoted)[0]
 		// const body = m.message.conversation || m.message[type].caption || m.message[type].text || (type == 'listResponseMessage' && m.message[type].singleSelectReply.selectedRowId) || (type == 'buttonsResponseMessage' && m.message[type].selectedButtonId) || (type == 'templateButtonReplyMessage' && m.message[type].selectedId) || ''
 		const body = m.message.conversation || (m.message.imageMessage && m.message.imageMessage.caption) || (m.message.videoMessage && m.message.videoMessage.caption) || (m.message.extendedTextMessage && m.message.extendedTextMessage.text) || (m.message.listResponseMessage && m.message.listResponseMessage.singleSelectReply.selectedRowId) || (m.message.buttonsResponseMessage && m.message.buttonsResponseMessage.selectedButtonId) || (m.message.templateButtonReplyMessage && m.message.templateButtonReplyMessage.selectedId) || ''
+		const budy = m.message.conversation || (m.message.extendedTextMessage && m.message.extendedTextMessage.text)
 		const command = body.startsWith(prefix) ? body.replace(prefix, '').trim().split(/ +/).shift().toLowerCase() : ''
 		const args = body.trim().split(/ +/).slice(1)
 		const q = args.join` `
@@ -69,6 +74,25 @@ module.exports = {
 		
 		conn.sendReadReceipt(from, sender, [m.key.id])
 		*/
+		if (tebakkata[from] && quoted && m.message[type].contextInfo.stanzaId == tebakkata[from][0].key.id && budy) {
+			if (budy.toLowerCase() !== tebakkata[from][1].jawaban.toLowerCase()) return reply('Salah!')
+			reply('Yeay, Jawaban Kamu Benar!')
+			clearTimeout(tebakkata[from].timeout)
+			delete tebakkata[from]
+		}
+		if (susunkata[from] && quoted && m.message[type].contextInfo.stanzaId == susunkata[from][0].key.id && budy) {
+			if (budy.toLowerCase() !== susunkata[from][1].jawaban.toLowerCase()) return reply('Salah!')
+			reply('Yeay, Jawaban Kamu Benar!')
+			clearTimeout(susunkata[from].timeout)
+			delete susunkata[from]
+		}
+		if (tebakgambar[from] && quoted && m.message[type].contextInfo.stanzaId == tebakgambar[from][0].key.id && budy) {
+			if (budy.toLowerCase() !== tebakgambar[from][1].jawaban.toLowerCase()) return reply('Salah!')
+			reply('Yeay, Jawaban Kamu Benar!')
+			clearTimeout(tebakgambar[from].timeout)
+			delete tebakgambar[from]
+		}
+		
 		switch (true) {
 			/** Menu **/
 			case /^(menu|help)$/i.test(command): {
@@ -474,6 +498,66 @@ module.exports = {
 					let teks = `${parseResult(data.result, { title: '*NHENTAI DOWNLOADER*', ignoreVal: ['details', 'pages', 'thumbnails', 'link'] })}\n${parseResult(details, { title: '' })}`
 					await conn.sendFile(from, pages[0], '', teks, m)
 					conn.sendMessage(from, { document: { url: API('zacros', '/nsfw/nhcode', { query: args[0] }) }, jpegThumbnail: (await conn.getFile(pages[0])).data, mimetype: 'application/pdf', fileName: `${title}.pdf` }, { quoted: m })
+				}).catch(reply)
+				break
+			}
+			
+			/** Image **/
+			case /^(waifu|neko)$/i.test(command): {
+				await reply(mess.wait)
+				axios.get(API('https://api.waifu.pics', '/sfw/' + command)).then(async ({ data }) => {
+					conn.sendMessage(from, { image: { url: data.url }, caption: data.url, footer: 'Random Image ' + command.replace(/^./, v => v.toUpperCase()), buttons: [{ buttonId: `${prefix + command}`, buttonText: { displayText: 'Next', type: 1 }}] }, { quoted: m })
+				}).catch(reply)
+				break
+			}
+			
+			/** Game **/
+			case /^hint$/i.test(command): {
+				if (!(from in tebakgambar)) return
+				reply('```' + tebakgambar[from][1].jawaban.replace(/[bcdfghjklmnpqrstvwxyz]/gi, '_') + '```')
+				break
+			}
+			case /^tebakgambar$/i.test(command): {
+				if (from in tebakgambar) return conn.reply(from, 'Masih ada game yg berlangsung di chat ini', tebakgambar[from][0])
+				axios.get('https://github.com/BochilTeam/database/raw/master/games/tebakgambar.json').then(async ({ data }) => {
+					data = pickRandom(data)
+					tebakgambar[from] = [
+						await conn.sendMessage(from, { image: { url: data.img }, caption: parseResult(data, { title: '*TEBAK GAMBAR*', ignoreKey: ['index', 'img', 'jawaban'], footer: '*• Timeout:* 60 detik' }), footer: 'Reply pesan ini untuk menjawab', buttons: [{ buttonId: `${prefix}hint`, buttonText: { displayText: 'Hint', type: 1 }}] }, { quoted: m }),
+						data,
+						setTimeout(() => {
+							if (tebakgambar[from]) conn.reply(from, `Waktu habis!\nJawabannya adalah *${data.jawaban}*`, tebakgambar[from][0])
+							delete tebakgambar[from]
+						}, 60 * 1000)
+					]
+				}).catch(reply)
+				break
+			}
+			case /^tebakkata$/i.test(command): {
+				if (from in tebakkata) return conn.reply(from, 'Masih ada game yg berlangsung di chat ini', tebakkata[from][0])
+				axios.get('https://raw.githubusercontent.com/BochilTeam/database/master/games/tebakkata.json').then(async ({ data }) => {
+					data = pickRandom(data)
+					susunkata[from] = [
+						await reply(parseResult(data, { title: '*TEBAK KATA*', ignoreKey: ['index', 'jawaban'], footer: '*• Timeout:* 30 detik' })),
+						data,
+						setTimeout(() => {
+							if (tebakkata[from]) conn.reply(from, `Waktu habis!\nJawabannya adalah *${data.jawaban}*`, tebakkata[from][0])
+							delete tebakkata[from]
+						}, 30 * 1000)
+					]
+				}).catch(reply)
+				break
+			}
+			case /^susunkata$/i.test(command): {
+				if (from in susunkata) return conn.reply(from, 'Masih ada game yg berlangsung di chat ini', susunkata[from][0])
+				axios.get(API('zacros', '/games/' + command)).then(async ({ data }) => {
+					susunkata[from] = [
+						await reply(parseResult(data, { title: '*SUSUN KATA*', ignoreKey: ['jawaban'], footer: '*• Timeout:* 30 detik' })),
+						data,
+						setTimeout(() => {
+							if (susunkata[from]) conn.reply(from, `Waktu habis!\nJawabannya adalah *${data.jawaban}*`, susunkata[from][0])
+							delete susunkata[from]
+						}, 30 * 1000)
+					]
 				}).catch(reply)
 				break
 			}
