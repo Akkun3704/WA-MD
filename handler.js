@@ -276,7 +276,7 @@ module.exports = {
 				if (!q) return reply(`Example:\n${prefix + command} https://t.me/addstickers/j9jvq_by_CalsiBot`)
 				if (!isUrl(args[0])) return reply('Invalid url')
 				await reply(mess.wait)
-				axios.get(API('zeks', '/telegram-sticker', { url: args[0] })).then(async ({ data }) => {
+				axios.get(API('zeks', '/telegram-sticker', { url: args[0] }, 'apikey')).then(async ({ data }) => {
 					let length = data.result.length
 					await reply(`Sending ${length} stickers...`)
 					if (length > 20) {
